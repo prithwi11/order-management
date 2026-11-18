@@ -4,8 +4,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.ordermanagement.customer.entity.Customer;
 import com.example.ordermanagement.customer.repository.CustomerRepository;
+import com.example.ordermanagement.customer.exception.CustomerAlreadyExistsException;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service 
 public class CustomerService {
@@ -21,7 +22,7 @@ public class CustomerService {
         boolean isEmailExists = this.customerRepository.existsByEmail(email);
 
         if (isEmailExists) {
-            throw new IllegalArgumentException("Customer with email " + email + " already exists.");
+            throw new CustomerAlreadyExistsException("Customer with email " + email + " already exists.");
         }
 
         //Create Customer Object
