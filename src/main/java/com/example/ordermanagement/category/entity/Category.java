@@ -1,8 +1,12 @@
 package com.example.ordermanagement.category.entity;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.example.ordermanagement.product.entity.Product;
 
 import jakarta.persistence.*;
 
@@ -22,6 +26,9 @@ public class Category {
     @CreationTimestamp 
     @Column (name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @OneToMany (mappedBy = "category", fetch = FetchType.LAZY)
+    private List<Product> products = new ArrayList<>();
 
     public Category() {}
 
@@ -53,4 +60,40 @@ public class Category {
     public void setDescription(String description) {
         this.description= description;
     }
+
+    public void addProduct(Product product) {
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+
+        if (this.products.contains(product)) {
+            return;
+        }
+
+        Category previousCategory = product.getCategory();
+
+        if (previousCategory != null && previousCategory != this) {
+            previousCategory.products.remove(product);
+        }
+
+        this.products.add(product);
+        product.setCategory(this);
+    }
+
+    public void removeProduct(Product product) {
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+
+        if (!this.products.contains(product)) {
+            return;
+        }
+
+        this.products.remove(product);
+
+        if (product.getCategory() == this) {
+            product.setCategory(null);
+        }
+    }
+
 }

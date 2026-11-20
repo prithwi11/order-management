@@ -1,0 +1,15 @@
+CREATE TABLE products (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    sku VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(1000) NULL,
+    price NUMERIC(12, 2) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    categoryId BIGINT NOT NULL,
+    
+    CONSTRAINT fk_products_category 
+        FOREIGN KEY (categoryId) 
+        REFERENCES categories (id)
+        ON DELETE RESTRICT
+);

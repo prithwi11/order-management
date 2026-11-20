@@ -1,0 +1,74 @@
+package com.example.ordermanagement.product.controller;
+
+import java.net.URI;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.example.ordermanagement.product.dto.request.CreateProductRequest;
+import com.example.ordermanagement.product.dto.request.UpdateProductRequest;
+import com.example.ordermanagement.product.dto.response.ProductPageResponse;
+import com.example.ordermanagement.product.dto.response.ProductResponse;
+import com.example.ordermanagement.product.entity.Product;
+import com.example.ordermanagement.product.service.ProductService;
+
+import io.micrometer.core.ipc.http.HttpSender.Response;
+import jakarta.validation.Valid;
+
+@RestController 
+@RequestMapping ("/api/products")
+public class ProductController {
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @PostMapping 
+    public ResponseEntity<ProductResponse> createProduct(
+        @Valid @RequestBody CreateProductRequest request
+    ) {
+        Product createdProduct = this.productService.createProducts(request.name(), request.categoryId(), request.description(), request.sku(), request.price(), request.active());
+
+        ProductResponse response = ProductResponse.from(createdProduct);
+
+        URI location = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(createdProduct.getId())
+            .toUri();
+
+        return ResponseEntity.created(location).body(response);
+    }
+
+    @GetMapping("/{id}") 
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
+        Product product = this.productService.getProductById(id);
+        return ResponseEntity.ok(ProductResponse.from(product));
+    }
+
+    @GetMapping
+    public ResponseEntity<ProductPageResponse> getAllProduct(@PageableDefault (size = 10, sort = "id") Pageable pageable) {
+        Page<Product> productPage = this.productService.fetchAllProduct(pageable);
+        return ResponseEntity.ok(ProductPageResponse.from(productPage));
+    }
+
+    @PutMapping ("/{id}")
+    public ResponseEntity<ProductResponse> updateProduct(
+        @PathVariable Long id,
+        @Valid @RequestBody UpdateProductRequest request
+    ) {
+        Product updateProduct = productService.updateProduct(id, request.name(), request.categoryId(), request.description(), request.sku(), request.price(), request.active());
+        return ResponseEntity.ok(ProductResponse.from(updateProduct));
+    }
+    
+    @DeleteMapping ("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+}
