@@ -61,6 +61,10 @@ public class Category {
         this.description= description;
     }
 
+    public List<Product> getProducts() {
+        return this.products;
+    }
+
     public void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");

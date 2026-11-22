@@ -13,14 +13,12 @@ import com.example.ordermanagement.product.dto.request.CreateProductRequest;
 import com.example.ordermanagement.product.dto.request.UpdateProductRequest;
 import com.example.ordermanagement.product.dto.response.ProductPageResponse;
 import com.example.ordermanagement.product.dto.response.ProductResponse;
-import com.example.ordermanagement.product.entity.Product;
 import com.example.ordermanagement.product.service.ProductService;
 
-import io.micrometer.core.ipc.http.HttpSender.Response;
 import jakarta.validation.Valid;
 
 @RestController 
-@RequestMapping ("/api/products")
+@RequestMapping("/api/products")
 public class ProductController {
     private final ProductService productService;
 
@@ -32,14 +30,19 @@ public class ProductController {
     public ResponseEntity<ProductResponse> createProduct(
         @Valid @RequestBody CreateProductRequest request
     ) {
-        Product createdProduct = this.productService.createProducts(request.name(), request.categoryId(), request.description(), request.sku(), request.price(), request.active());
-
-        ProductResponse response = ProductResponse.from(createdProduct);
+        ProductResponse response = this.productService.createProducts(
+            request.name(), 
+            request.categoryId(), 
+            request.description(), 
+            request.sku(), 
+            request.price(), 
+            request.active()
+        );
 
         URI location = ServletUriComponentsBuilder
             .fromCurrentRequest()
             .path("/{id}")
-            .buildAndExpand(createdProduct.getId())
+            .buildAndExpand(response.id()) // Use response.getId() if ProductResponse is a class
             .toUri();
 
         return ResponseEntity.created(location).body(response);
@@ -47,26 +50,34 @@ public class ProductController {
 
     @GetMapping("/{id}") 
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
-        Product product = this.productService.getProductById(id);
-        return ResponseEntity.ok(ProductResponse.from(product));
+        ProductResponse response = this.productService.getProductById(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<ProductPageResponse> getAllProduct(@PageableDefault (size = 10, sort = "id") Pageable pageable) {
-        Page<Product> productPage = this.productService.fetchAllProduct(pageable);
+    public ResponseEntity<ProductPageResponse> getAllProduct(@PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        Page<ProductResponse> productPage = this.productService.fetchAllProduct(pageable);
         return ResponseEntity.ok(ProductPageResponse.from(productPage));
     }
 
-    @PutMapping ("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
         @PathVariable Long id,
         @Valid @RequestBody UpdateProductRequest request
     ) {
-        Product updateProduct = productService.updateProduct(id, request.name(), request.categoryId(), request.description(), request.sku(), request.price(), request.active());
-        return ResponseEntity.ok(ProductResponse.from(updateProduct));
+        ProductResponse updatedProduct = productService.updateProduct(
+            id, 
+            request.name(), 
+            request.categoryId(), 
+            request.description(), 
+            request.sku(), 
+            request.price(), 
+            request.active()
+        );
+        return ResponseEntity.ok(updatedProduct);
     }
     
-    @DeleteMapping ("/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();

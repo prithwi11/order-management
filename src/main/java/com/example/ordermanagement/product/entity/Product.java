@@ -36,7 +36,7 @@ public class Product {
     private Instant createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "categoryId", nullable = false)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
     
     public Category getCategory() {
