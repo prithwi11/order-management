@@ -7,10 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.example.ordermanagement.product.entity.Product;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     @EntityGraph (attributePaths = "category")
     Optional<Product> findWithCategoryById(Long id);
 
@@ -19,5 +20,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findBySku(String sku);
     boolean existsBySku(String sku);
+
+    List<Product> findByCategoryId(Long categoryId);
+
+    List<Product> findByNameContainingIgnoreCase(String name);
+
+    List<Product> findByActiveTrue();
+
+    List<Product> findByCategoryIdAndActiveTrue(Long categoryId);
 
 } 

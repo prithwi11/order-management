@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.example.ordermanagement.product.dto.request.CreateProductRequest;
+import com.example.ordermanagement.product.dto.request.ProductFilterRequest;
 import com.example.ordermanagement.product.dto.request.UpdateProductRequest;
 import com.example.ordermanagement.product.dto.response.ProductPageResponse;
 import com.example.ordermanagement.product.dto.response.ProductResponse;
@@ -55,8 +56,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<ProductPageResponse> getAllProduct(@PageableDefault(size = 10, sort = "id") Pageable pageable) {
-        Page<ProductResponse> productPage = this.productService.fetchAllProduct(pageable);
+    public ResponseEntity<ProductPageResponse> getAllProduct(
+        @Valid @ModelAttribute ProductFilterRequest request) {
+        Page<ProductResponse> productPage = this.productService.fetchAllProduct(request);
         return ResponseEntity.ok(ProductPageResponse.from(productPage));
     }
 
