@@ -1,5 +1,10 @@
 package com.example.ordermanagement.inventory.service;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,4 +97,80 @@ public class InventoryService {
         inventory.consumeReserveStock(quantity);
         return inventory;
     }
+
+    
+    @Transactional
+    public void reserveStockBulk(Map<Long, Integer> productQuantities) {
+        if (productQuantities == null || productQuantities.isEmpty()) {
+            throw new IllegalArgumentException("At least one product is required");
+        }
+
+        Map<Long, Inventory> inventoriesByProductId =
+            inventoryRepository.findAllByProductIdIn(productQuantities.keySet())
+                .stream()
+                .collect(Collectors.toMap(
+                    inventory -> inventory.getProduct().getId(),
+                    Function.identity()
+                ));
+
+        if (inventoriesByProductId.size() != productQuantities.size()) {
+            throw new InventoryNotFoundException(
+                "Inventory records are missing for one or more products"
+            );
+        }
+
+        for (Map.Entry<Long, Integer> entry : productQuantities.entrySet()) {
+            Inventory inventory = inventoriesByProductId.get(entry.getKey());
+            inventory.reserveStock(entry.getValue());
+        }
+    }
+
+    @Transactional
+    public void consumeStockBulk(Map<Long, Integer> productQuantities) {
+        if (productQuantities == null || productQuantities.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Inventory> inventoriesByProductId = this.inventoryRepository
+                .findAllByProductIdIn(productQuantities.keySet())
+                .stream()
+                .collect(Collectors.toMap(
+                        inv -> inv.getProduct().getId(),
+                        Function.identity()
+                ));
+
+        for (Map.Entry<Long, Integer> entry : productQuantities.entrySet()) {
+            Long productId = entry.getKey();
+            Inventory inventory = inventoriesByProductId.get(productId);
+            if (inventory == null) {
+                throw new InventoryNotFoundException("Inventory record not found for product id: " + productId);
+            }
+            inventory.consumeReserveStock(entry.getValue());
+        }
+    }
+
+    @Transactional
+    public void releaseStockBulk(Map<Long, Integer> productQuantities) {
+        if (productQuantities == null || productQuantities.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Inventory> inventoriesByProductId = this.inventoryRepository
+                .findAllByProductIdIn(productQuantities.keySet())
+                .stream()
+                .collect(Collectors.toMap(
+                        inv -> inv.getProduct().getId(),
+                        Function.identity()
+                ));
+
+        for (Map.Entry<Long, Integer> entry : productQuantities.entrySet()) {
+            Long productId = entry.getKey();
+            Inventory inventory = inventoriesByProductId.get(productId);
+            if (inventory == null) {
+                throw new InventoryNotFoundException("Inventory record not found for product id: " + productId);
+            }
+            inventory.releaseStock(entry.getValue());
+        }
+    }
+
 }
