@@ -2,10 +2,13 @@ package com.example.ordermanagement.product.entity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.example.ordermanagement.category.entity.Category;
+import com.example.ordermanagement.inventory.entity.Inventory;
 
 import jakarta.persistence.*;
 
@@ -38,6 +41,9 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @OneToOne (mappedBy = "product", fetch = FetchType.LAZY, optional = false)
+    private Inventory inventory;
     
     public Category getCategory() {
         return this.category;
@@ -112,6 +118,17 @@ public class Product {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void addInventory(Inventory inventory) {
+        this.inventory = inventory;
+        if (inventory != null) {
+            inventory.setProduct(this);
+        }
+    }
+
+    public Inventory getInventory() {
+        return this.inventory;
     }
 
 }

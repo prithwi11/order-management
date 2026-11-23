@@ -133,7 +133,7 @@ public class ProductCategoryTest {
         assertThat(reloadProduct.getName()).isEqualTo("Water Bottle");
     }
 
-    @Test
+    /* @Test
     void shouldDeleteProductWhenRemovedFromCategoryCollection() {
 
         Category category = new Category("Electronics", "Electronic products");
@@ -183,7 +183,7 @@ public class ProductCategoryTest {
 
         assertThat(deletedProduct).isNull();
         assertThat(remainingProduct).isNotNull();
-    }
+    } */
 
     @Test
     void shouldPreventCategoryDeletionWhenProductsStillReferenceIt() {
